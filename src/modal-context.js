@@ -10,9 +10,9 @@ import { createPortal } from "react-dom";
 
 // https://lea.verou.me/2016/12/resolve-promises-externally-with-this-one-weird-trick/
 function defer() {
-  var res, rej;
+  let res, rej;
 
-  var promise = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
     res = resolve;
     rej = reject;
   });
@@ -28,37 +28,34 @@ const ModalContext = createContext(null);
 export const useModalContext = () => useContext(ModalContext);
 
 export const ModalContextProvider = ({ children }) => {
-  const [render, setRender] = useState(null); //
+  const [portalChildren, setPortalChilren] = useState(null);
 
-  const handleSet = useCallback((Component) => {
+  const handleSet = useCallback((ComponentToRender, componentProps = {}) => {
     const promise = defer();
 
-    const renderFunc = () => () => {
-      return (
-        <Component
-          onAccept={() => {
-            promise.resolve("yes");
-            setRender(null);
-          }}
-        />
-      );
-    };
+    const portalChild = (
+      <ComponentToRender
+        onResolve={(resolveValue) => {
+          promise.resolve(resolveValue);
+          setPortalChilren(null);
+        }}
+        {...componentProps}
+      />
+    );
 
-    setRender(renderFunc);
+    setPortalChilren(portalChild);
 
     return promise;
   }, []);
 
   const contextValue = useMemo(() => ({ handleSet }), [handleSet]);
 
-  console.log({ render });
-
   return (
     <Fragment>
       <ModalContext.Provider value={contextValue}>
         {children}
       </ModalContext.Provider>
-      {createPortal(render && render(), document.getElementById("root"))}
+      {createPortal(portalChildren, document.getElementById("root"))}
     </Fragment>
   );
 };
