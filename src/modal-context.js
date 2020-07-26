@@ -7,46 +7,44 @@ import React, {
   useMemo,
 } from "react";
 import { createPortal } from "react-dom";
-
-// https://lea.verou.me/2016/12/resolve-promises-externally-with-this-one-weird-trick/
-function defer() {
-  let res, rej;
-
-  const promise = new Promise((resolve, reject) => {
-    res = resolve;
-    rej = reject;
-  });
-
-  promise.resolve = res;
-  promise.reject = rej;
-
-  return promise;
-}
+import { nanoid } from "nanoid";
 
 const ModalContext = createContext(null);
 
 export const useModalContext = () => useContext(ModalContext);
 
 export const ModalContextProvider = ({ children }) => {
-  const [portalChildren, setPortalChilren] = useState(null);
+  const [portalChildren, setPortalChildren] = useState([]);
 
-  const handleSet = useCallback((ComponentToRender, componentProps = {}) => {
-    const promise = defer();
-
-    const portalChild = (
-      <ComponentToRender
-        onResolve={(resolveValue) => {
-          promise.resolve(resolveValue);
-          setPortalChilren(null);
-        }}
-        {...componentProps}
-      />
-    );
-
-    setPortalChilren(portalChild);
-
-    return promise;
+  const addChild = useCallback((child) => {
+    setPortalChildren((currentChildren) => [...currentChildren, child]);
   }, []);
+
+  const removeChild = useCallback((childToRemove) => {
+    setPortalChildren((currentChildren) =>
+      currentChildren.filter((child) => child !== childToRemove)
+    );
+  }, []);
+
+  const handleSet = useCallback(
+    (ComponentToRender, componentProps = {}) => {
+      return new Promise((resolve) => {
+        const newChild = (
+          <ComponentToRender
+            key={nanoid()}
+            onResolve={(resolveValue) => {
+              resolve(resolveValue);
+              removeChild(newChild);
+            }}
+            {...componentProps}
+          />
+        );
+
+        addChild(newChild);
+      });
+    },
+    [addChild, removeChild]
+  );
 
   const contextValue = useMemo(() => ({ handleSet }), [handleSet]);
 
