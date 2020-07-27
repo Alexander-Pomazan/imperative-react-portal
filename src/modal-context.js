@@ -22,22 +22,24 @@ export const ModalContextProvider = ({ children }) => {
 
   const removeChild = useCallback((childToRemove) => {
     setPortalChildren((currentChildren) =>
-      currentChildren.filter((child) => child !== childToRemove)
+      currentChildren.filter((child) => {
+        return child !== childToRemove;
+      })
     );
   }, []);
 
   const handleSet = useCallback(
-    (ComponentToRender, componentProps = {}) => {
+    (renderChild) => {
       return new Promise((resolve) => {
         const newChild = (
-          <ComponentToRender
-            key={nanoid()}
-            onResolve={(resolveValue) => {
-              resolve(resolveValue);
-              removeChild(newChild);
-            }}
-            {...componentProps}
-          />
+          <Fragment key={nanoid()}>
+            {renderChild({
+              onResolve: (...args) => {
+                removeChild(newChild);
+                resolve(...args);
+              },
+            })}
+          </Fragment>
         );
 
         addChild(newChild);

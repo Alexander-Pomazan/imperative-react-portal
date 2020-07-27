@@ -10,6 +10,7 @@ import {
 } from "@material-ui/core";
 
 const ModalContent = ({ onResolve }) => {
+  console.log(onResolve);
   return (
     <Dialog open>
       <DialogTitle>Would you like to confirm you action?</DialogTitle>
@@ -34,7 +35,9 @@ export const ModalUser = () => {
   const { handleSet } = useModalContext();
 
   const confirm = useCallback(() => {
-    return handleSet(ModalContent);
+    return handleSet(({ onResolve }) => (
+      <ModalContent key={1} onResolve={onResolve} />
+    ));
   }, [handleSet]);
 
   const handleClose = useCallback(async () => {
