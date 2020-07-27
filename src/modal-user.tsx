@@ -9,8 +9,9 @@ import {
   DialogContentText,
 } from "@material-ui/core";
 
-const ModalContent = ({ onResolve }) => {
-  console.log(onResolve);
+const ModalContent: React.FC<{
+  onResolve: (arg: "confirmed" | "not-confirmed") => void;
+}> = ({ onResolve }) => {
   return (
     <Dialog open>
       <DialogTitle>Would you like to confirm you action?</DialogTitle>
@@ -18,7 +19,7 @@ const ModalContent = ({ onResolve }) => {
         <DialogContentText>
           Confirmation of your actions would lead to your actions changing their
           status to be confirmed. Cancellation of confirmation is strictly
-          descouraged as it can lead to various non-confirmed bugs.
+          discouraged as it can lead to various non-confirmed bugs.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -32,18 +33,18 @@ const ModalContent = ({ onResolve }) => {
 };
 
 export const ModalUser = () => {
-  const { handleSet } = useModalContext();
+  const { renderComponent } = useModalContext();
 
   const confirm = useCallback(() => {
-    return handleSet(({ onResolve }) => (
+    return renderComponent(({ onResolve }) => (
       <ModalContent key={1} onResolve={onResolve} />
     ));
-  }, [handleSet]);
+  }, [renderComponent]);
 
   const handleClose = useCallback(async () => {
     const response = await confirm();
 
-    alert(response);
+    console.log(response);
   }, [confirm]);
 
   return (

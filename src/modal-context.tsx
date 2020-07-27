@@ -9,12 +9,23 @@ import React, {
 import { createPortal } from "react-dom";
 import { nanoid } from "nanoid";
 
-const ModalContext = createContext(null);
+type RenderProp<T> = (arg: { onResolve: (arg: T) => void }) => React.ReactNode;
+
+type RenderComponent = <T>(renderProp: RenderProp<T>) => Promise<T>;
+
+interface ContextValue {
+  renderComponent: RenderComponent;
+}
+
+const ModalContext = createContext<ContextValue>({
+  // @ts-ignore
+  renderComponent: async (render) => {},
+});
 
 export const useModalContext = () => useContext(ModalContext);
 
-export const ModalContextProvider = ({ children }) => {
-  const [portalChildren, setPortalChildren] = useState([]);
+export const ModalContextProvider: React.FC = ({ children }) => {
+  const [portalChildren, setPortalChildren] = useState<React.ReactNode[]>([]);
 
   const addChild = useCallback((child) => {
     setPortalChildren((currentChildren) => [...currentChildren, child]);
@@ -28,7 +39,7 @@ export const ModalContextProvider = ({ children }) => {
     );
   }, []);
 
-  const handleSet = useCallback(
+  const renderComponent = useCallback<RenderComponent>(
     (renderChild) => {
       return new Promise((resolve) => {
         const newChild = (
@@ -48,14 +59,14 @@ export const ModalContextProvider = ({ children }) => {
     [addChild, removeChild]
   );
 
-  const contextValue = useMemo(() => ({ handleSet }), [handleSet]);
+  const contextValue = useMemo(() => ({ renderComponent }), [renderComponent]);
 
   return (
     <Fragment>
       <ModalContext.Provider value={contextValue}>
         {children}
       </ModalContext.Provider>
-      {createPortal(portalChildren, document.getElementById("root"))}
+      {createPortal(portalChildren, document.getElementById("root")!)}
     </Fragment>
   );
 };
