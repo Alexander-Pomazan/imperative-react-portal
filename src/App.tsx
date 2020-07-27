@@ -1,13 +1,20 @@
 import React from "react";
 
-import { ModalContextProvider } from "./modal-context";
-import { ModalUser } from "./modal-user";
+import { ImperativeRenderProvider } from "./imperative-render-context";
+import { Paper, Box } from "@material-ui/core";
+import { TodoList } from "./todo-list";
 
 function App() {
   return (
-    <ModalContextProvider>
-      <ModalUser />
-    </ModalContextProvider>
+    <ImperativeRenderProvider>
+      <Box maxWidth={400} width="90%" marginX="auto" marginTop="20vh">
+        <Paper>
+          <Box margin={4}>
+            <TodoList />
+          </Box>
+        </Paper>
+      </Box>
+    </ImperativeRenderProvider>
   );
 }
 

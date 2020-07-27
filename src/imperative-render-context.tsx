@@ -17,14 +17,14 @@ interface ContextValue {
   renderComponent: RenderComponent;
 }
 
-const ModalContext = createContext<ContextValue>({
+const ImperativeRenderContext = createContext<ContextValue>({
   // @ts-ignore
   renderComponent: async (render) => {},
 });
 
-export const useModalContext = () => useContext(ModalContext);
+export const useImperativeRender = () => useContext(ImperativeRenderContext);
 
-export const ModalContextProvider: React.FC = ({ children }) => {
+export const ImperativeRenderProvider: React.FC = ({ children }) => {
   const [portalChildren, setPortalChildren] = useState<React.ReactNode[]>([]);
 
   const addChild = useCallback((child) => {
@@ -63,9 +63,9 @@ export const ModalContextProvider: React.FC = ({ children }) => {
 
   return (
     <Fragment>
-      <ModalContext.Provider value={contextValue}>
+      <ImperativeRenderContext.Provider value={contextValue}>
         {children}
-      </ModalContext.Provider>
+      </ImperativeRenderContext.Provider>
       {createPortal(portalChildren, document.getElementById("root")!)}
     </Fragment>
   );
